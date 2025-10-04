@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------
+  # 1. VUE FRONTEND SERVIS
+  # ----------------------------------------------------
+  frontend:
+    # Docker ho zostaví z Dockerfile v aktuálnom priečinku
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    container_name: vue_frontend
+
+    # Mapujeme port z kontajnera (5173) na náš lokálny stroj (5173)
+    ports:
+      - "5173:5173"
+      
+    # Mapujeme lokálny kód do kontajnera pre automatický Hot Reload
+    volumes:
+      - .:/app
+      - /app/node_modules # Zabezpečí, že node_modules zostanú v kontajneri
+    
+    # Pre vývoj: Reštart ak spadne
+    restart: "unless-stopped"
+    
+    # Premenné prostredia pre komunikáciu s Laravel BE
+    environment:
+      - VITE_API_BASE_URL=http://backend:8000/api  # Upravte podľa vášho Laravel kontajnera
