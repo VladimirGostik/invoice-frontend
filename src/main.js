@@ -11,7 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 // CoreUI Vue komponenty
 import CoreuiVue from '@coreui/vue'
 
-// Router a Pinia store
+// Router
 import router from './router'
 
 const app = createApp(App)
