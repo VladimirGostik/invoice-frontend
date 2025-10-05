@@ -7,7 +7,7 @@
             <CCard class="p-4">
               <CCardBody>
                 <CForm @submit.prevent="handleLogin">
-                  <h1>{{ import.meta.env.VITE_APP_NAME }}</h1>
+                  <h1>{{ appName }}</h1>
                   <p class="text-body-secondary">Prihláste sa do svojho účtu</p>
                   
                   <!-- Error message -->
@@ -112,6 +112,9 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
+
+// Získame app name z environment premenných
+const appName = import.meta.env.VITE_APP_NAME || 'Fakturačný Systém'
 
 const form = ref({
   email: '',
