@@ -3,7 +3,6 @@
     <!-- Logo/Brand -->
     <div class="sidebar-header">
       <h4 class="text-white mb-0">
-        <CIcon icon="cil-speedometer" class="me-2" />
         {{ appName }}
       </h4>
     </div>
@@ -15,6 +14,13 @@
           <router-link to="/dashboard" class="nav-link" active-class="active">
             <CIcon icon="cil-speedometer" class="nav-icon" />
             <span>Dashboard</span>
+          </router-link>
+        </li>
+        
+        <li class="nav-item">
+          <router-link to="/companies" class="nav-link" active-class="active">
+            <CIcon icon="cil-building" class="nav-icon" />
+            <span>Firmy</span>
           </router-link>
         </li>
         
@@ -51,6 +57,8 @@
 </template>
 
 <script setup>
+import { CIcon } from '@coreui/icons-vue'
+
 const appName = import.meta.env.VITE_APP_NAME || 'Fakturačný systém'
 </script>
 

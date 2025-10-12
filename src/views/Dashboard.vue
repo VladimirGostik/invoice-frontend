@@ -1,22 +1,3 @@
-const getStatusText = (status) => {
-  const texts = {
-    'paid': 'Zaplatené',
-    'pending': 'Čaká na platbu',
-    'overdue': 'Po splatnosti',
-    'draft': 'Koncept'
-  }
-  return texts[status] || status
-}
-
-const getCompanyStatusText = (status) => {
-  const texts = {
-    'active': 'Aktívna',
-    'inactive': 'Neaktívna',
-    'pending': 'Čakajúca',
-    'suspended': 'Pozastavená'
-  }
-  return texts[status] || 'Neznámy'
-}
 <template>
   <AppLayout>
     <!-- Company Selector -->
@@ -49,7 +30,7 @@ const getCompanyStatusText = (status) => {
                   <div>
                     <strong>{{ selectedCompany.name }}</strong>
                     <br>
-                    <small class="text-muted">{{ selectedCompany.email }}</small>
+                    <small class="text-muted">{{ selectedCompany.bank_account }}</small>
                   </div>
                 </div>
               </CCol>
@@ -59,88 +40,24 @@ const getCompanyStatusText = (status) => {
       </CCol>
     </CRow>
 
-    <!-- Stats Cards -->
-    <CRow class="mb-4">
-      <CCol sm="6" lg="3">
-        <CCard class="mb-4">
-          <CCardBody>
-            <div class="d-flex justify-content-between">
-              <div>
-                <div class="fs-4 fw-semibold">{{ companiesStore.totalCompanies }}</div>
-                <div class="text-body-secondary text-uppercase fw-semibold small">
-                  Celkové firmy
-                </div>
-              </div>
-              <CIcon icon="cil-building" height="52" class="text-primary" />
-            </div>
-          </CCardBody>
-        </CCard>
-      </CCol>
-      
-      <CCol sm="6" lg="3">
-        <CCard class="mb-4">
-          <CCardBody>
-            <div class="d-flex justify-content-between">
-              <div>
-                <div class="fs-4 fw-semibold">{{ companiesStore.activeCompanies }}</div>
-                <div class="text-body-secondary text-uppercase fw-semibold small">
-                  Aktívne firmy
-                </div>
-              </div>
-              <CIcon icon="cil-check" height="52" class="text-success" />
-            </div>
-          </CCardBody>
-        </CCard>
-      </CCol>
-      
-      <CCol sm="6" lg="3">
-        <CCard class="mb-4">
-          <CCardBody>
-            <div class="d-flex justify-content-between">
-              <div>
-                <div class="fs-4 fw-semibold">{{ currentStats.totalInvoices }}</div>
-                <div class="text-body-secondary text-uppercase fw-semibold small">
-                  Celkové faktúry
-                </div>
-              </div>
-              <CIcon icon="cil-description" height="52" class="text-info" />
-            </div>
-          </CCardBody>
-        </CCard>
-      </CCol>
-      
-      <CCol sm="6" lg="3">
-        <CCard class="mb-4">
-          <CCardBody>
-            <div class="d-flex justify-content-between">
-              <div>
-                <div class="fs-4 fw-semibold">€{{ currentStats.totalRevenue }}</div>
-                <div class="text-body-secondary text-uppercase fw-semibold small">
-                  Celkové tržby
-                </div>
-              </div>
-              <CIcon icon="cil-euro" height="52" class="text-success" />
-            </div>
-          </CCardBody>
-        </CCard>
-      </CCol>
-    </CRow>
-
-    <!-- Companies Overview -->
+    <!-- Companies Table -->
     <CRow>
       <CCol :xs="12">
         <CCard class="mb-4">
           <CCardHeader>
             <strong>Prehľad firiem</strong>
+            <span class="text-muted ms-2" v-if="companiesStore.pagination.total">
+              ({{ companiesStore.pagination.from }} - {{ companiesStore.pagination.to }} z {{ companiesStore.pagination.total }})
+            </span>
           </CCardHeader>
           <CCardBody>
-            <!-- Loading state -->
+            <!-- Loading -->
             <div v-if="companiesStore.isLoading" class="text-center py-4">
               <CSpinner color="primary" />
               <p class="mt-2">Načítavam firmy...</p>
             </div>
             
-            <!-- Error state -->
+            <!-- Error -->
             <CAlert 
               v-else-if="companiesStore.errors.general"
               color="danger"
@@ -149,19 +66,23 @@ const getCompanyStatusText = (status) => {
               {{ companiesStore.errors.general }}
             </CAlert>
             
-            <!-- Companies table -->
+            <!-- Table -->
             <CTable hover v-else-if="companiesStore.companies.length > 0">
               <CTableHead>
                 <CTableRow>
                   <CTableHeaderCell>Názov firmy</CTableHeaderCell>
-                  <CTableHeaderCell>Email</CTableHeaderCell>
-                  <CTableHeaderCell>Telefón</CTableHeaderCell>
-                  <CTableHeaderCell>Stav</CTableHeaderCell>
+                  <CTableHeaderCell>IČO</CTableHeaderCell>
+                  <CTableHeaderCell>DIČ</CTableHeaderCell>
+                  <CTableHeaderCell>Bankový účet</CTableHeaderCell>
                   <CTableHeaderCell>Akcie</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                <CTableRow v-for="company in companiesStore.companies" :key="company.id">
+                <CTableRow 
+                  v-for="company in companiesStore.companies" 
+                  :key="company.id"
+                  :class="{ 'table-active': company.id === selectedCompanyId }"
+                >
                   <CTableDataCell>
                     <div class="d-flex align-items-center">
                       <CIcon icon="cil-building" class="me-2 text-primary" />
@@ -172,36 +93,53 @@ const getCompanyStatusText = (status) => {
                       </div>
                     </div>
                   </CTableDataCell>
-                  <CTableDataCell>{{ company.email }}</CTableDataCell>
-                  <CTableDataCell>{{ company.phone }}</CTableDataCell>
+                  <CTableDataCell>{{ company.ico }}</CTableDataCell>
+                  <CTableDataCell>{{ company.dic }}</CTableDataCell>
+                  <CTableDataCell>{{ company.bank_account }}</CTableDataCell>
                   <CTableDataCell>
-                    <CBadge :color="getCompanyStatusColor(company.status)">
-                      {{ getCompanyStatusText(company.status) }}
-                    </CBadge>
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <CButtonGroup size="sm">
-                      <CButton 
-                        color="primary" 
-                        variant="outline"
-                        @click="selectCompany(company)"
-                      >
-                        <CIcon icon="cil-cursor" />
-                      </CButton>
-                      <CButton color="info" variant="outline">
-                        <CIcon icon="cil-pencil" />
-                      </CButton>
-                      <CButton color="success" variant="outline">
-                        <CIcon icon="cil-chart-pie" />
-                      </CButton>
-                    </CButtonGroup>
+                    <CButton 
+                      color="primary" 
+                      size="sm"
+                      variant="outline"
+                      @click="selectCompany(company)"
+                    >
+                      <CIcon icon="cil-cursor" /> Vybrať
+                    </CButton>
                   </CTableDataCell>
                 </CTableRow>
               </CTableBody>
             </CTable>
+
+            <!-- Pagination -->
+            <div v-if="companiesStore.pagination.lastPage > 1" class="mt-3">
+              <CPagination>
+                <CPaginationItem 
+                  :disabled="companiesStore.pagination.currentPage === 1"
+                  @click="loadPage(companiesStore.pagination.currentPage - 1)"
+                >
+                  Predošlá
+                </CPaginationItem>
+                
+                <CPaginationItem 
+                  v-for="page in companiesStore.pagination.lastPage" 
+                  :key="page"
+                  :active="page === companiesStore.pagination.currentPage"
+                  @click="loadPage(page)"
+                >
+                  {{ page }}
+                </CPaginationItem>
+                
+                <CPaginationItem 
+                  :disabled="companiesStore.pagination.currentPage === companiesStore.pagination.lastPage"
+                  @click="loadPage(companiesStore.pagination.currentPage + 1)"
+                >
+                  Ďalšia
+                </CPaginationItem>
+              </CPagination>
+            </div>
             
             <!-- Empty state -->
-            <div v-else class="text-center py-4">
+            <div v-else-if="companiesStore.isLoading" class="text-center py-4">
               <CIcon icon="cil-building" size="3xl" class="text-muted mb-3" />
               <h5>Žiadne firmy</h5>
               <p class="text-muted">Zatiaľ nemáte žiadne firmy v systéme.</p>
@@ -214,80 +152,35 @@ const getCompanyStatusText = (status) => {
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { onMounted } from 'vue'
+import { CIcon } from '@coreui/icons-vue'
 import { useAuthStore } from '@/stores/auth'
-import { useCompaniesStore } from '@/stores/companies'
+import { useCompanies } from '@/composables/useCompanies'
 import AppLayout from '@/components/layout/AppLayout.vue'
 
 const authStore = useAuthStore()
-const companiesStore = useCompaniesStore()
+const { 
+  companiesStore, 
+  selectedCompanyId, 
+  selectedCompany, 
+  selectCompany, 
+  handleCompanyChange 
+} = useCompanies()
 
-const selectedCompanyId = ref('')
-const currentStats = ref({
-  totalInvoices: 0,
-  totalRevenue: '0.00'
-})
-
-const selectedCompany = computed(() => {
-  return companiesStore.companies.find(c => c.id == selectedCompanyId.value)
-})
-
-const handleCompanyChange = () => {
-  if (selectedCompany.value) {
-    companiesStore.selectCompany(selectedCompany.value)
-    // Načítame štatistiky pre vybranú firmu
-    loadCompanyStats(selectedCompany.value.id)
-  }
-}
-
-const selectCompany = (company) => {
-  selectedCompanyId.value = company.id
-  companiesStore.selectCompany(company)
-  loadCompanyStats(company.id)
-}
-
-const loadCompanyStats = async (companyId) => {
-  // Tu načítate štatistiky pre konkrétnu firmu
-  try {
-    // const response = await authStore.api.get(`/companies/${companyId}/stats`)
-    // currentStats.value = response.data
-    
-    // Zatiaľ mock data:
-    currentStats.value = {
-      totalInvoices: Math.floor(Math.random() * 100),
-      totalRevenue: (Math.random() * 50000).toFixed(2)
-    }
-  } catch (error) {
-    console.error('Error loading company stats:', error)
-  }
-}
-
-const getCompanyStatusColor = (status) => {
-  const colors = {
-    'active': 'success',
-    'inactive': 'secondary',
-    'pending': 'warning',
-    'suspended': 'danger'
-  }
-  return colors[status] || 'secondary'
+const loadPage = async (page) => {
+  await companiesStore.fetchCompanies(page)
 }
 
 onMounted(async () => {
-  console.log('🚀 Dashboard mounted')
-  console.log('Is authenticated:', authStore.isAuthenticated)
-  console.log('Auth token exists:', !!authStore.token)
+  // Load stored company selection
+  companiesStore.loadStoredCompany()
   
-  authStore.checkAuth()
+  // Fetch companies
+  await companiesStore.fetchCompanies()
   
-  console.log('📞 Calling fetchCompanies...')
-  const result = await companiesStore.fetchCompanies()
-  console.log('📞 fetchCompanies result:', result)
-
-  if (companiesStore.companies.length === 1) {
-    const company = companiesStore.companies[0]
-    selectedCompanyId.value = company.id
-    companiesStore.selectCompany(company)
-    loadCompanyStats(company.id)
+  // Auto-select if only one company
+  if (companiesStore.companies.length === 1 && !selectedCompanyId.value) {
+    selectCompany(companiesStore.companies[0])
   }
 })
 </script>

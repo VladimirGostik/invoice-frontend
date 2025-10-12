@@ -19,6 +19,24 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/companies',
+    name: 'Companies',
+    component: () => import('@/views/companies/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/companies/create',
+    name: 'CompaniesCreate',
+    component: () => import('@/views/companies/Form.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/companies/:id/edit',
+    name: 'CompaniesEdit',
+    component: () => import('@/views/companies/Form.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/invoices',
     name: 'invoices',
     component: () => import('@/views/Invoices.vue'),
@@ -37,15 +55,33 @@ const router = createRouter({
   routes
 })
 
-// Ochrana routes - kontrola autentifikácie
-router.beforeEach((to, from, next) => {
+// Ochrana routes
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  // Pri prvom načítaní (refresh), skontroluj auth
+  if (!from.name) {
+    authStore.checkAuth()
+  }
+  
+  const isAuthenticated = authStore.isAuthenticated
+  
+  console.log('🔐 Router guard:', {
+    to: to.path,
+    from: from.path,
+    requiresAuth: to.meta.requiresAuth,
+    isAuthenticated: isAuthenticated,
+    hasToken: !!authStore.token
+  })
+  
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    console.log('❌ Not authenticated, redirecting to login')
     next('/login')
-  } else if (to.meta.guest && authStore.isAuthenticated) {
+  } else if (to.meta.guest && isAuthenticated) {
+    console.log('✅ Already authenticated, redirecting to dashboard')
     next('/dashboard')
   } else {
+    console.log('✅ Access granted to', to.path)
     next()
   }
 })

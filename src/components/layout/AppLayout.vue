@@ -23,6 +23,8 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AppSidebar from './AppSidebar.vue'
 import AppHeader from './AppHeader.vue'
+import { CIcon } from '@coreui/icons-vue'
+import { cilBuilding, cilCursor } from '@coreui/icons'
 
 const route = useRoute()
 

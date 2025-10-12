@@ -37,6 +37,8 @@
 <script setup>
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { CIcon } from '@coreui/icons-vue'
+import { cilBuilding, cilCursor } from '@coreui/icons'
 
 const props = defineProps({
   pageTitle: {
