@@ -1,109 +1,92 @@
 <template>
-  <div class="bg-primary min-vh-100 d-flex flex-row align-items-center">
-    <CContainer>
-      <CRow class="justify-content-center">
-        <CCol :md="8">
-          <CCardGroup>
-            <CCard class="p-4">
-              <CCardBody>
-                <CForm @submit.prevent="handleLogin">
-                  <h1>{{ appName }}</h1>
-                  <p class="text-body-secondary">Prihláste sa do svojho účtu</p>
-                  
-                  <!-- Error message -->
-                  <CAlert 
-                    v-if="authStore.errors.general" 
-                    color="danger" 
-                    :visible="true"
-                    dismissible
-                    @close="authStore.errors.general = ''"
+  <div class="login-fullscreen">
+    <div class="login-overlay">
+      <CContainer fluid class="h-100">
+        <CRow class="h-100 justify-content-center align-items-center">
+          <CCol :lg="6" :md="8" :sm="10" :xs="12">
+            <div class="login-card">
+              <div class="text-center mb-4">
+                <h1 class="display-4 text-white fw-bold">{{ appName }}</h1>
+                <p class="text-white-50 fs-5">Prihláste sa do svojho účtu</p>
+              </div>
+              
+              <CForm @submit.prevent="handleLogin">
+                <!-- Error message -->
+                <CAlert 
+                  v-if="authStore.errors.general" 
+                  color="danger" 
+                  :visible="true"
+                  dismissible
+                  @close="authStore.errors.general = ''"
+                  class="mb-4"
+                >
+                  {{ authStore.errors.general }}
+                </CAlert>
+                
+                <!-- Email input -->
+                <CInputGroup class="mb-3" size="lg">
+                  <CInputGroupText class="bg-white border-0">
+                    <CIcon icon="cil-user" />
+                  </CInputGroupText>
+                  <CFormInput
+                    v-model="form.email"
+                    type="email"
+                    placeholder="Email"
+                    autocomplete="email"
+                    required
+                    :disabled="authStore.isLoading"
+                    :invalid="!!authStore.errors.email"
+                    class="border-0 py-3"
+                  />
+                </CInputGroup>
+                
+                <!-- Password input -->
+                <CInputGroup class="mb-4" size="lg">
+                  <CInputGroupText class="bg-white border-0">
+                    <CIcon icon="cil-lock-locked" />
+                  </CInputGroupText>
+                  <CFormInput
+                    v-model="form.password"
+                    type="password"
+                    placeholder="Heslo"
+                    autocomplete="current-password"
+                    required
+                    :disabled="authStore.isLoading"
+                    :invalid="!!authStore.errors.password"
+                    class="border-0 py-3"
+                  />
+                </CInputGroup>
+                
+                <!-- Submit button -->
+                <div class="d-grid mb-3">
+                  <CButton 
+                    type="submit"
+                    color="primary" 
+                    size="lg"
+                    :disabled="authStore.isLoading"
+                    class="py-3 fw-bold"
                   >
-                    {{ authStore.errors.general }}
-                  </CAlert>
-                  
-                  <!-- Email input -->
-                  <CInputGroup class="mb-3">
-                    <CInputGroupText>
-                      <CIcon icon="cil-user" />
-                    </CInputGroupText>
-                    <CFormInput
-                      v-model="form.email"
-                      type="email"
-                      placeholder="Email"
-                      autocomplete="email"
-                      required
-                      :disabled="authStore.isLoading"
-                      :invalid="!!authStore.errors.email"
+                    <CSpinner 
+                      v-if="authStore.isLoading" 
+                      size="sm" 
+                      class="me-2"
                     />
-                    <CFormFeedback v-if="authStore.errors.email" invalid>
-                      {{ authStore.errors.email[0] }}
-                    </CFormFeedback>
-                  </CInputGroup>
-                  
-                  <!-- Password input -->
-                  <CInputGroup class="mb-4">
-                    <CInputGroupText>
-                      <CIcon icon="cil-lock-locked" />
-                    </CInputGroupText>
-                    <CFormInput
-                      v-model="form.password"
-                      type="password"
-                      placeholder="Heslo"
-                      autocomplete="current-password"
-                      required
-                      :disabled="authStore.isLoading"
-                      :invalid="!!authStore.errors.password"
-                    />
-                    <CFormFeedback v-if="authStore.errors.password" invalid>
-                      {{ authStore.errors.password[0] }}
-                    </CFormFeedback>
-                  </CInputGroup>
-                  
-                  <!-- Submit button -->
-                  <CRow>
-                    <CCol :xs="6">
-                      <CButton 
-                        type="submit"
-                        color="primary" 
-                        class="px-4"
-                        :disabled="authStore.isLoading"
-                      >
-                        <CSpinner 
-                          v-if="authStore.isLoading" 
-                          size="sm" 
-                          class="me-2"
-                        />
-                        {{ authStore.isLoading ? 'Prihlasuje...' : 'Prihlásiť' }}
-                      </CButton>
-                    </CCol>
-                    <CCol :xs="6" class="text-end">
-                      <CButton color="link" class="px-0">
-                        Zabudli ste heslo?
-                      </CButton>
-                    </CCol>
-                  </CRow>
-                </CForm>
-              </CCardBody>
-            </CCard>
-            
-            <!-- Right side card with info -->
-            <CCard class="text-white bg-primary py-5" style="width: 44%">
-              <CCardBody class="text-center">
-                <div>
-                  <h2>Fakturačný systém</h2>
-                  <p>
-                    Jednoduché a efektívne riešenie pre správu faktúr a klientov.
-                  </p>
-                  <p class="mt-3">
-                    <small>Verzia 1.0</small>
-                  </p>
+                    {{ authStore.isLoading ? 'Prihlasuje...' : 'Prihlásiť' }}
+                  </CButton>
                 </div>
-              </CCardBody>
-            </CCard>
-          </CCardGroup>
-        </CCol>
-      </CRow>
-    </CContainer>
+                
+                <!-- Forgot password link -->
+                <div class="text-center">
+                  <CButton color="link" class="text-white-50 text-decoration-none">
+                    Zabudli ste heslo?
+                  </CButton>
+                </div>
+              </CForm>
+            </div>
+          </CCol>
+        </CRow>
+      </CContainer>
+    </div>
   </div>
 </template>
 
@@ -134,7 +117,73 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.bg-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+.login-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.login-overlay {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2rem 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Glassmorphism effect pre inputy */
+.login-card .form-control {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+.login-card .form-control:focus {
+  background: rgba(255, 255, 255, 1);
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.login-card .input-group-text {
+  border-radius: 10px 0 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.login-card .btn-primary {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+}
+
+.login-card .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-card {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+  }
+  
+  .display-4 {
+    font-size: 2rem !important;
+  }
 }
 </style>

@@ -23,7 +23,4 @@ services:
     
     # Pre vývoj: Reštart ak spadne
     restart: "unless-stopped"
-    
-    # Premenné prostredia pre komunikáciu s Laravel BE
-    environment:
-      - VITE_API_BASE_URL=http://backend:8000/api  # Upravte podľa vášho Laravel kontajnera
+ 
