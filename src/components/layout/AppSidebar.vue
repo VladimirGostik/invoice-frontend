@@ -20,7 +20,14 @@
         <li class="nav-item">
           <router-link to="/companies" class="nav-link" active-class="active">
             <CIcon icon="cil-building" class="nav-icon" />
-            <span>Firmy</span>
+            <span>Hlavné firmy</span>
+          </router-link>
+        </li>
+        
+        <li class="nav-item">
+          <router-link to="/residential-companies" class="nav-link" active-class="active">
+            <CIcon icon="cil-home" class="nav-icon" />
+            <span>Bytové podniky</span>
           </router-link>
         </li>
         
@@ -28,6 +35,13 @@
           <router-link to="/invoices" class="nav-link" active-class="active">
             <CIcon icon="cil-description" class="nav-icon" />
             <span>Faktúry</span>
+          </router-link>
+        </li>
+        
+        <li class="nav-item">
+          <router-link to="/monthly-invoices" class="nav-link" active-class="active">
+            <CIcon icon="cil-calendar" class="nav-icon" />
+            <span>Mesačné faktúry</span>
           </router-link>
         </li>
         
@@ -80,6 +94,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'Fakturačný systém'
 .sidebar-nav {
   flex: 1;
   padding: 1rem 0;
+  overflow-y: auto;
 }
 
 .nav-list {
