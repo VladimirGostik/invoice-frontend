@@ -27,12 +27,26 @@ export const useCompaniesStore = defineStore('companies', () => {
   )
 
   // ACTIONS
-  const fetchCompanies = async (page = 1) => {
+  const fetchCompanies = async (page = 1, filters = {}, perPage = null) => {
     isLoading.value = true
     errors.value = {}
     
     try {
-      const response = await api.get(`/api/companies/main?page=${page}`)
+      const params = new URLSearchParams({
+        page: page.toString()
+      })
+      
+      // Add perPage if provided
+      if (perPage) {
+        params.append('per_page', perPage.toString())
+      }
+      
+      // Add filters if provided
+      if (filters.name) {
+        params.append('filter[company_name]', filters.name)
+      }
+      
+      const response = await api.get(`/api/companies/main?${params}`)
       
       // Transform API data
       companies.value = response.data.data.map(company => ({

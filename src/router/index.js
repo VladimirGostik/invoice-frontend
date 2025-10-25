@@ -65,6 +65,24 @@ const routes = [
     name: 'ResidentialCompaniesEdit',
     component: () => import('@/views/residential-companies/Form.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/monthly-invoices',
+    name: 'MonthlyInvoices',
+    component: () => import('@/views/monthly-invoices/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/monthly-invoices/create',
+    name: 'MonthlyInvoicesCreate',
+    component: () => import('@/views/monthly-invoices/Form.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/monthly-invoices/:id/edit',
+    name: 'MonthlyInvoicesEdit',
+    component: () => import('@/views/monthly-invoices/Form.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
