@@ -47,6 +47,24 @@ const routes = [
     name: 'clients',
     component: () => import('@/views/Clients.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/residential-companies',
+    name: 'ResidentialCompanies',
+    component: () => import('@/views/residential-companies/Index.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/residential-companies/create',
+    name: 'ResidentialCompaniesCreate',
+    component: () => import('@/views/residential-companies/Form.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/residential-companies/:id/edit',
+    name: 'ResidentialCompaniesEdit',
+    component: () => import('@/views/residential-companies/Form.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

@@ -23,6 +23,13 @@
             <span>Firmy</span>
           </router-link>
         </li>
+
+        <li class="nav-item">
+          <router-link to="/residential-companies" class="nav-link" active-class="active">
+            <CIcon icon="cil-building" class="nav-icon" />
+            <span>Bytové podniky</span>
+          </router-link>
+        </li>
         
         <li class="nav-item">
           <router-link to="/invoices" class="nav-link" active-class="active">
@@ -30,15 +37,8 @@
             <span>Faktúry</span>
           </router-link>
         </li>
-        
-        <li class="nav-item">
-          <router-link to="/clients" class="nav-link" active-class="active">
-            <CIcon icon="cil-people" class="nav-icon" />
-            <span>Klienti</span>
-          </router-link>
-        </li>
-        
-        <li class="nav-item">
+
+        <!-- <li class="nav-item">
           <router-link to="/reports" class="nav-link" active-class="active">
             <CIcon icon="cil-chart-pie" class="nav-icon" />
             <span>Reporty</span>
@@ -50,7 +50,7 @@
             <CIcon icon="cil-settings" class="nav-icon" />
             <span>Nastavenia</span>
           </router-link>
-        </li>
+        </li> -->
       </ul>
     </nav>
   </aside>

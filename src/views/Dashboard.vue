@@ -74,7 +74,6 @@
                   <CTableHeaderCell>IČO</CTableHeaderCell>
                   <CTableHeaderCell>DIČ</CTableHeaderCell>
                   <CTableHeaderCell>Bankový účet</CTableHeaderCell>
-                  <CTableHeaderCell>Akcie</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
@@ -96,16 +95,6 @@
                   <CTableDataCell>{{ company.ico }}</CTableDataCell>
                   <CTableDataCell>{{ company.dic }}</CTableDataCell>
                   <CTableDataCell>{{ company.bank_account }}</CTableDataCell>
-                  <CTableDataCell>
-                    <CButton 
-                      color="primary" 
-                      size="sm"
-                      variant="outline"
-                      @click="selectCompany(company)"
-                    >
-                      <CIcon icon="cil-cursor" /> Vybrať
-                    </CButton>
-                  </CTableDataCell>
                 </CTableRow>
               </CTableBody>
             </CTable>
