@@ -23,13 +23,14 @@ export const useMonthlyInvoicesStore = defineStore('monthlyInvoices', () => {
   const totalInvoices = computed(() => pagination.value.total)
 
   // ACTIONS
-  const fetchInvoices = async (page = 1, filters = {}, sort = null) => {
+  const fetchInvoices = async (page = 1, filters = {}, sort = null, perPage = 10) => {
     isLoading.value = true
     errors.value = {}
     
     try {
       const params = new URLSearchParams({
-        page: page.toString()
+        page: page.toString(),
+        per_page: perPage.toString()
       })
       
       // Pridaj filtre

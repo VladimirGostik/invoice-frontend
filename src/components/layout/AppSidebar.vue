@@ -31,12 +31,12 @@
           </router-link>
         </li>
         
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <router-link to="/invoices" class="nav-link" active-class="active">
             <CIcon icon="cil-description" class="nav-icon" />
             <span>Faktúry</span>
           </router-link>
-        </li>
+        </li> -->
         
         <li class="nav-item">
           <router-link to="/monthly-invoices" class="nav-link" active-class="active">
@@ -45,7 +45,7 @@
           </router-link>
         </li>
         
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <router-link to="/clients" class="nav-link" active-class="active">
             <CIcon icon="cil-people" class="nav-icon" />
             <span>Klienti</span>
@@ -57,14 +57,14 @@
             <CIcon icon="cil-chart-pie" class="nav-icon" />
             <span>Reporty</span>
           </router-link>
-        </li>
+        </li> -->
         
         <li class="nav-item">
           <router-link to="/settings" class="nav-link" active-class="active">
             <CIcon icon="cil-settings" class="nav-icon" />
             <span>Nastavenia</span>
           </router-link>
-        </li> -->
+        </li>
       </ul>
     </nav>
   </aside>

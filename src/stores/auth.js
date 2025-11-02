@@ -1,29 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import axios from 'axios'
+import api from '@/services/api' // ✅ Použi centrálnu inštanciu
 import router from '@/router'
-
-// Vytvoríme Axios instanciu s base URL z .env
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }
-})
-
-// Axios interceptor pre automatické pridanie tokenu a handling 401
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Ak dostaneme 401, token je neplatný - odhláš používateľa
-    if (error.response?.status === 401) {
-      const authStore = useAuthStore()
-      authStore.forceLogout()
-    }
-    return Promise.reject(error)
-  }
-)
 
 export const useAuthStore = defineStore('auth', () => {
   // ⚡ STATE
@@ -42,13 +20,9 @@ export const useAuthStore = defineStore('auth', () => {
     errors.value = {}
     
     try {
-      console.log('Pokus o prihlásenie na:', import.meta.env.VITE_API_BASE_URL)
-      
       const response = await api.post('/api/auth/login', credentials)
-      console.log('Login response:', response.data)
-      
       const authToken = response.data.access_token
-    
+      
       // Uložíme token
       token.value = authToken
       localStorage.setItem('auth_token', authToken)
@@ -56,18 +30,16 @@ export const useAuthStore = defineStore('auth', () => {
       // Nastavíme Authorization header
       api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
     
-      console.log('✅ Token uložený:', authToken)
-    
       // Ulož user data z login response (ak ich BE posiela)
       if (response.data.user) {
         user.value = response.data.user
+        localStorage.setItem('auth_user', JSON.stringify(user.value))
       } else {
         // Fallback - ulož aspoň email
         user.value = { email: credentials.email }
+        localStorage.setItem('auth_user', JSON.stringify(user.value))
       }
       
-      console.log('✅ User data:', user.value)
-    
       // Redirect na dashboard
       await router.push('/dashboard')
     
@@ -109,70 +81,29 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null
     user.value = null
     localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth_user') // Vyčisti aj user
-    delete api.defaults.headers.common['Authorization']
+    localStorage.removeItem('auth_user')
     router.push('/login')
   }
 
-  const fetchUser = async () => {
-    if (!token.value) return
-    
-    try {
-      const response = await api.get('/api/auth/user')
-      user.value = response.data
-      localStorage.setItem('auth_user', JSON.stringify(user.value))
-      console.log('✅ User data loaded:', user.value)
-    } catch (error) {
-      console.error('❌ Fetch user error:', error)
-      
-      // Neodhlasuj pri fetch errore - už je v interceptore
-      if (error.response?.status !== 401) {
-        console.warn('⚠️ User fetch failed, using stored data')
-        // Skús načítať z localStorage
-        const storedUser = localStorage.getItem('auth_user')
-        if (storedUser) {
-          user.value = JSON.parse(storedUser)
-        } else {
-          user.value = { email: 'user' }
-        }
-      }
-    }
-  }
-
   const checkAuth = () => {
-    console.log('🔍 Checking auth...', { hasToken: !!token.value, hasUser: !!user.value })
-    
-    if (token.value) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
-      
-      // Skús načítať user z localStorage
-      if (!user.value) {
-        const storedUser = localStorage.getItem('auth_user')
-        if (storedUser) {
-          try {
-            user.value = JSON.parse(storedUser)
-            console.log('✅ User loaded from localStorage:', user.value)
-          } catch (e) {
-            console.error('Failed to parse stored user:', e)
-          }
+    if (token.value && !user.value) {
+      const storedUser = localStorage.getItem('auth_user')
+      if (storedUser) {
+        try {
+          user.value = JSON.parse(storedUser)
+        } catch (e) {
+          console.error('Failed to parse stored user:', e)
         }
       }
-      
-      // ⚠️ REMOVED: Nebudeme volať fetchUser() pri každom checkAuth()
-      // Volá sa len raz pri logine
     }
   }
 
   // Inicializácia
   if (token.value) {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
-    
-    // Načítaj user z localStorage
     const storedUser = localStorage.getItem('auth_user')
     if (storedUser) {
       try {
         user.value = JSON.parse(storedUser)
-        console.log('✅ User restored from localStorage:', user.value)
       } catch (e) {
         console.error('Failed to parse stored user:', e)
       }
@@ -194,10 +125,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     forceLogout,
-    fetchUser,
-    checkAuth,
-    
-    // Export API pre použitie v iných častiach aplikácie
-    api
+    checkAuth
   }
 })

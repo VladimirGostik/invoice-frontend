@@ -1,9 +1,11 @@
 <template>
-  <router-view />
+  <RouterView />
+  <ForbiddenDialog />
 </template>
 
 <script setup>
-// Žiadna logika potrebná, iba router-view zobrazuje správny komponent
+import { RouterView } from 'vue-router'
+import ForbiddenDialog from '@/components/ForbiddenDialog.vue'
 </script>
 
 <style>

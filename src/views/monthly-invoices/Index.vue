@@ -22,29 +22,65 @@
                   <CSpinner size="sm" class="me-1" /> Vyhľadávám...
                 </small>
               </CCol>
-              <CCol :md="3">
+              <CCol :md="2">
                 <CFormSelect
                   v-model="filters.company_id"
-                  :options="companyOptions"
                 >
                   <option value="">Všetky hlavné firmy</option>
+                  <option v-for="company in companiesStore.companies" :key="company.id" :value="company.id">
+                    {{ company.name }}
+                  </option>
                 </CFormSelect>
               </CCol>
-              <CCol :md="3">
+              <CCol :md="2">
                 <CFormSelect
                   v-model="filters.residential_company_id"
-                  :options="residentialCompanyOptions"
                 >
                   <option value="">Všetky bytové podniky</option>
+                  <option v-for="company in residentialCompaniesStore.companies" :key="company.id" :value="company.id">
+                    {{ company.name }}
+                  </option>
                 </CFormSelect>
               </CCol>
-              <CCol :md="3">
+              <CCol :md="2">
                 <CFormSelect
                   v-model="filters.street_id"
-                  :options="streetOptions"
+                  :disabled="!filters.residential_company_id"
                 >
                   <option value="">Všetky ulice</option>
+                  <option v-for="street in streetOptions" :key="street.value" :value="street.value">
+                    {{ street.label }}
+                  </option>
                 </CFormSelect>
+              </CCol>
+              <CCol :md="2">
+                <CInputGroup>
+                  <CInputGroupText>
+                    <CIcon icon="cil-list" size="sm" />
+                  </CInputGroupText>
+                  <CFormSelect
+                    v-model="perPage"
+                  >
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </CFormSelect>
+                  <CInputGroupText class="text-muted" style="font-size: 0.875rem;">
+                    / strana
+                  </CInputGroupText>
+                </CInputGroup>
+              </CCol>
+              <CCol :md="1" class="d-flex align-items-start">
+                <CButton 
+                  v-if="hasActiveFilters"
+                  color="secondary" 
+                  variant="ghost"
+                  @click="clearFilters"
+                  title="Vyčistiť filtre"
+                >
+                  <CIcon icon="cil-x" />
+                </CButton>
               </CCol>
             </CRow>
 
@@ -77,9 +113,9 @@
                     Hlavná firma
                     <CIcon v-if="sort.field === 'company_name'" :icon="sort.direction === 'asc' ? 'cil-arrow-top' : 'cil-arrow-bottom'" size="sm" />
                   </CTableHeaderCell>
-                  <CTableHeaderCell @click="handleSort('residential_company_name')" style="cursor: pointer;">
+                  <CTableHeaderCell @click="handleSort('residential_company_id')" style="cursor: pointer;">
                     Bytový podnik
-                    <CIcon v-if="sort.field === 'residential_company_name'" :icon="sort.direction === 'asc' ? 'cil-arrow-top' : 'cil-arrow-bottom'" size="sm" />
+                    <CIcon v-if="sort.field === 'residential_company_id'" :icon="sort.direction === 'asc' ? 'cil-arrow-top' : 'cil-arrow-bottom'" size="sm" />
                   </CTableHeaderCell>
                   <CTableHeaderCell>Ulica</CTableHeaderCell>
                   <CTableHeaderCell @click="handleSort('total')" style="cursor: pointer;" class="text-end">
@@ -122,13 +158,6 @@
                         <CIcon icon="cil-pencil" /> Upraviť
                       </CButton>
                       <CButton 
-                        color="success" 
-                        variant="outline"
-                        @click="convertToInvoice(invoice)"
-                      >
-                        <CIcon icon="cil-check" /> Vytvoriť faktúru
-                      </CButton>
-                      <CButton 
                         color="danger" 
                         variant="outline"
                         @click="handleDelete(invoice)"
@@ -142,7 +171,11 @@
             </CTable>
 
             <!-- Pagination -->
-            <div v-if="invoicesStore.pagination.lastPage > 1" class="mt-3">
+            <div v-if="invoicesStore.pagination.lastPage > 1" class="mt-3 d-flex justify-content-between align-items-center">
+              <div class="text-muted">
+                Zobrazujem {{ invoicesStore.pagination.from }} - {{ invoicesStore.pagination.to }} 
+                z {{ invoicesStore.pagination.total }} záznamov
+              </div>
               <CPagination>
                 <CPaginationItem 
                   :disabled="invoicesStore.pagination.currentPage === 1"
@@ -152,7 +185,7 @@
                 </CPaginationItem>
                 
                 <CPaginationItem 
-                  v-for="page in invoicesStore.pagination.lastPage" 
+                  v-for="page in visiblePages" 
                   :key="page"
                   :active="page === invoicesStore.pagination.currentPage"
                   @click="loadPage(page)"
@@ -183,6 +216,14 @@
               >
                 Pridať prvú mesačnú faktúru
               </CButton>
+              <CButton 
+                v-else
+                color="secondary" 
+                variant="outline"
+                @click="clearFilters"
+              >
+                Vyčistiť filtre
+              </CButton>
             </div>
           </CCardBody>
         </CCard>
@@ -192,18 +233,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMonthlyInvoicesStore } from '@/stores/monthlyInvoices'
 import { useCompaniesStore } from '@/stores/companies'
 import { useResidentialCompaniesStore } from '@/stores/residentialCompanies'
 import AppLayout from '@/components/layout/AppLayout.vue'
-import { formatCurrency } from '@/utils/formatters'
 
 const router = useRouter()
 const invoicesStore = useMonthlyInvoicesStore()
 const companiesStore = useCompaniesStore()
 const residentialCompaniesStore = useResidentialCompaniesStore()
+
+// Helper function for currency formatting
+const formatCurrency = (value) => {
+  if (!value) return '0,00 €'
+  return new Intl.NumberFormat('sk-SK', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(value)
+}
 
 const filters = ref({
   invoice_name: '',
@@ -217,6 +266,7 @@ const sort = ref({
   direction: 'asc'
 })
 
+const perPage = ref('10')
 const isSearching = ref(false)
 let searchTimeout = null
 
@@ -226,20 +276,6 @@ const hasActiveFilters = computed(() => {
          filters.value.company_id || 
          filters.value.residential_company_id || 
          filters.value.street_id
-})
-
-const companyOptions = computed(() => {
-  return companiesStore.companies.map(c => ({
-    value: c.id,
-    label: c.name
-  }))
-})
-
-const residentialCompanyOptions = computed(() => {
-  return residentialCompaniesStore.companies.map(c => ({
-    value: c.id,
-    label: c.name
-  }))
 })
 
 const streetOptions = computed(() => {
@@ -253,6 +289,20 @@ const streetOptions = computed(() => {
     value: s.id,
     label: s.street_name
   })) || []
+})
+
+// Pagination - show max 5 pages at a time
+const visiblePages = computed(() => {
+  const current = invoicesStore.pagination.currentPage
+  const last = invoicesStore.pagination.lastPage
+  const delta = 2
+  const pages = []
+  
+  for (let i = Math.max(1, current - delta); i <= Math.min(last, current + delta); i++) {
+    pages.push(i)
+  }
+  
+  return pages
 })
 
 // Watch for invoice_name changes with debounce
@@ -279,12 +329,33 @@ watch(() => filters.value.residential_company_id, () => {
 })
 watch(() => filters.value.street_id, () => loadInvoices())
 
+// ✅ Watch for perPage changes (instant reload)
+watch(() => perPage.value, () => {
+  console.log('📊 Per page changed to:', perPage.value)
+  loadInvoices()
+})
+
 const loadInvoices = async () => {
-  await invoicesStore.fetchInvoices(1, filters.value, sort.value.field ? sort.value : null)
+  const activeFilters = {}
+  
+  // Only add non-empty filters
+  if (filters.value.invoice_name) activeFilters.invoice_name = filters.value.invoice_name
+  if (filters.value.company_id) activeFilters.company_id = filters.value.company_id
+  if (filters.value.residential_company_id) activeFilters.residential_company_id = filters.value.residential_company_id
+  if (filters.value.street_id) activeFilters.street_id = filters.value.street_id
+  
+  await invoicesStore.fetchInvoices(1, activeFilters, sort.value.field ? sort.value : null, parseInt(perPage.value))
 }
 
 const loadPage = async (page) => {
-  await invoicesStore.fetchInvoices(page, filters.value, sort.value.field ? sort.value : null)
+  const activeFilters = {}
+  
+  if (filters.value.invoice_name) activeFilters.invoice_name = filters.value.invoice_name
+  if (filters.value.company_id) activeFilters.company_id = filters.value.company_id
+  if (filters.value.residential_company_id) activeFilters.residential_company_id = filters.value.residential_company_id
+  if (filters.value.street_id) activeFilters.street_id = filters.value.street_id
+  
+  await invoicesStore.fetchInvoices(page, activeFilters, sort.value.field ? sort.value : null, parseInt(perPage.value))
 }
 
 const handleSort = (field) => {
@@ -297,18 +368,31 @@ const handleSort = (field) => {
   loadInvoices()
 }
 
-const convertToInvoice = async (invoice) => {
-  if (confirm(`Naozaj chcete vytvoriť reálnu faktúru z "${invoice.invoice_name}"?`)) {
-    // TODO: Implement conversion to real invoice
-    alert('Funkcia bude implementovaná neskôr')
+const clearFilters = () => {
+  filters.value = {
+    invoice_name: '',
+    company_id: '',
+    residential_company_id: '',
+    street_id: ''
   }
+  sort.value = {
+    field: null,
+    direction: 'asc'
+  }
+  loadInvoices()
 }
 
 const handleDelete = async (invoice) => {
   if (confirm(`Naozaj chcete vymazať mesačnú faktúru "${invoice.invoice_name}"?`)) {
     const result = await invoicesStore.deleteInvoice(invoice.id)
     if (result.success) {
-      await invoicesStore.fetchInvoices(invoicesStore.pagination.currentPage, filters.value, sort.value.field ? sort.value : null)
+      const activeFilters = {}
+      if (filters.value.invoice_name) activeFilters.invoice_name = filters.value.invoice_name
+      if (filters.value.company_id) activeFilters.company_id = filters.value.company_id
+      if (filters.value.residential_company_id) activeFilters.residential_company_id = filters.value.residential_company_id
+      if (filters.value.street_id) activeFilters.street_id = filters.value.street_id
+      
+      await invoicesStore.fetchInvoices(invoicesStore.pagination.currentPage, activeFilters, sort.value.field ? sort.value : null, parseInt(perPage.value))
     }
   }
 }
@@ -321,6 +405,6 @@ onMounted(async () => {
   ])
   
   // Load invoices
-  await invoicesStore.fetchInvoices()
+  await invoicesStore.fetchInvoices(1, {}, null, parseInt(perPage.value))
 })
 </script>

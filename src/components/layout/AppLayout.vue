@@ -34,7 +34,11 @@ const pageTitle = computed(() => {
     'Dashboard': 'Dashboard',
     'invoices': 'Faktúry',
     'clients': 'Klienti',
-    'settings': 'Nastavenia'
+    'settings': 'Nastavenia',
+    'reports': 'Reporty',
+    'companies': 'Hlavné firmy',
+    'residential-companies': 'Bytové podniky',
+    'MonthlyInvoices': 'Mesačné faktúry'
   }
   return titles[route.name] || 'Fakturačný systém'
 })
